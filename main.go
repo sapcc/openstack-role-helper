@@ -26,14 +26,14 @@ type migrateCmd struct {
 				// Note: var name needs to be same as enclosing struct
 				NewRole string `arg:"" help:"Role (name or ID)."`
 			} `arg:""`
-		} `cmd`
+		} `cmd:""`
 	} `arg:""`
 }
 
 func main() {
 	openstackCmdPath := getExecutablePath("openstack")
 
-	var cli cli
+	var cli cli //nolint:govet
 	ctx := kong.Parse(&cli,
 		kong.Name("openstack-role-helper"),
 		kong.UsageOnError(),
