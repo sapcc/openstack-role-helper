@@ -1,0 +1,26 @@
+binaries:
+  - name: openstack-role-helper
+    fromPackage: .
+    installTo: bin/
+
+golangciLint:
+  createConfig: true
+
+renovate:
+  enabled: true
+
+githubWorkflow:
+  global:
+    assignees:
+      - talal
+      - SuperSandro2000
+    ignorePaths: [ "**.md" ] # all Markdown files
+  ci:
+    enabled: true
+  license:
+    enabled: true
+  securityChecks:
+    enabled: true
+  spellCheck:
+    enabled: true
+    ignorePaths: [] # override global setting so that nothing is ignored
