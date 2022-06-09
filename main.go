@@ -36,6 +36,7 @@ func main() {
 	var cli cli //nolint:govet
 	ctx := kong.Parse(&cli,
 		kong.Name("openstack-role-helper"),
+		kong.Description("Wrapper around OpenStack CLI for performing mass role operations."),
 		kong.UsageOnError(),
 		kong.ConfigureHelp(kong.HelpOptions{Compact: true}),
 	)
