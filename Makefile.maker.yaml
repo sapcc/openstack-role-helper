@@ -11,6 +11,7 @@ renovate:
 
 githubWorkflow:
   global:
+    defaultBranch: main
     assignees:
       - talal
       - SuperSandro2000
