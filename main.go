@@ -22,6 +22,9 @@ import (
 	"github.com/alecthomas/kong"
 )
 
+// openstackCmdPath is the absolute path to the `openstack` CLI.
+var openstackCmdPath string
+
 type cli struct {
 	List    listCmd    `cmd:"" help:"List role assignments."`
 	Migrate migrateCmd `cmd:"" help:"Migrate a role assignment for a user/group on system/domain/project, i.e. add a new role and remove an existing role."`
@@ -45,7 +48,7 @@ type migrateCmd struct {
 }
 
 func main() {
-	openstackCmdPath := getExecutablePath("openstack")
+	openstackCmdPath = getExecutablePath("openstack")
 
 	var cli cli //nolint:govet
 	ctx := kong.Parse(&cli,
@@ -57,10 +60,10 @@ func main() {
 
 	switch ctx.Command() {
 	case "list <roles>":
-		result := getRoleAssignments(openstackCmdPath, true, cli.List.Roles...)
+		result := getRoleAssignments(true, cli.List.Roles...)
 		printRoleAssignments(result)
 	case "migrate <old-role> to <new-role>":
-		migrateRole(openstackCmdPath, cli.Migrate.OldRole.OldRole, cli.Migrate.OldRole.To.NewRole.NewRole)
+		migrateRole(cli.Migrate.OldRole.OldRole, cli.Migrate.OldRole.To.NewRole.NewRole)
 	}
 }
 

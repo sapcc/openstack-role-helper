@@ -45,14 +45,14 @@ type roleAssignment struct {
 	roles   []string
 }
 
-func getRoleAssignments(openstackPath string, names bool, roles ...string) []roleAssignment {
+func getRoleAssignments(names bool, roles ...string) []roleAssignment {
 	var roleAssignmentFromOS []roleAssignmentResultFromOS
 	for _, r := range roles {
 		args := []string{"role", "assignment", "list", "-f", "json", "--role", r}
 		if names {
 			args = append(args, "--names")
 		}
-		out, err := exec.Command(openstackPath, args...).CombinedOutput()
+		out, err := exec.Command(openstackCmdPath, args...).CombinedOutput()
 		must(err)
 
 		var data []roleAssignmentResultFromOS

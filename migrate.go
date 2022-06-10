@@ -15,20 +15,26 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os/exec"
 )
 
-func migrateRole(openstackPath, oldRole, newRole string) {
-	// Step 1. Get role assignments.
-	assignments := getRoleAssignments(openstackPath, false, oldRole, newRole)
+func migrateRole(oldRole, newRole string) {
+	// Step 1. Get IDs for the user give roles (since the user could have provided role
+	// names instead of IDs).
+	oldRoleID := getRoleID(oldRole)
+	newRoleID := getRoleID(newRole)
 
-	// Step 2. Only add newRole, if it doesn't exist for a user/group.
+	// Step 2. Get role assignments.
+	assignments := getRoleAssignments(false, oldRoleID, newRoleID)
+
+	// Step 2. Find which user/group don't have the newRole and add the newRole to them.
 	var roleAddList []roleAssignment
 	for _, v := range assignments {
 		exist := false
 		for _, r := range v.roles {
-			if r == newRole {
+			if r == newRoleID {
 				exist = true
 			}
 		}
@@ -37,47 +43,72 @@ func migrateRole(openstackPath, oldRole, newRole string) {
 		}
 	}
 	if len(roleAddList) > 0 {
-		fmt.Printf("Role %q will be added to the following existing role assignments\n", newRole)
+		fmt.Printf("Role \"%s = %s\" will be added to the following role assignments:\n", newRole, newRoleID)
 		printRoleAssignments(roleAddList)
 
 		fmt.Println()
 		getUserConfirmation()
+		fmt.Println()
 
 		for _, v := range roleAddList {
-			args := buildRoleMigrateArgs("add", newRole, v)
-			_, err := exec.Command(openstackPath, args...).CombinedOutput()
+			args := buildRoleMigrateArgs("add", newRoleID, v)
+			out, err := exec.Command(openstackCmdPath, args...).CombinedOutput()
+			fmt.Println(string(out))
 			must(err)
 		}
 	}
 
-	// Step 3. Only remove oldRole, if newRole exists.
+	// Step 3. Remove oldRole from those user/group where both oldRole and newRole exists.
 	// Get fresh listing from OpenStack.
-	assignments = getRoleAssignments(openstackPath, false, oldRole, newRole)
+	assignments = getRoleAssignments(false, oldRoleID, newRoleID)
 	var roleRemoveList []roleAssignment
 	for _, v := range assignments {
-		exist := false
+		foundOld := false
+		foundNew := false
 		for _, r := range v.roles {
-			if r == newRole {
-				exist = true
+			if r == oldRoleID {
+				foundOld = true
+			}
+			if r == newRoleID {
+				foundNew = true
 			}
 		}
-		if exist {
+		if foundOld && foundNew {
 			roleRemoveList = append(roleRemoveList, v)
 		}
 	}
 	if len(roleRemoveList) > 0 {
-		fmt.Printf("Role %q will be removed from the following existing role assignments\n", oldRole)
+		fmt.Printf("Role \"%s = %s\" will be removed from the following role assignments:\n", oldRole, oldRoleID)
 		printRoleAssignments(roleRemoveList)
 
 		fmt.Println()
 		getUserConfirmation()
+		fmt.Println()
 
-		for _, v := range roleAddList {
-			args := buildRoleMigrateArgs("remove", oldRole, v)
-			_, err := exec.Command(openstackPath, args...).CombinedOutput()
+		for _, v := range roleRemoveList {
+			args := buildRoleMigrateArgs("remove", oldRoleID, v)
+			out, err := exec.Command(openstackCmdPath, args...).CombinedOutput()
+			fmt.Println(string(out))
 			must(err)
 		}
 	}
+}
+
+func getRoleID(name string) string {
+	args := []string{"role", "show", name, "-f", "json"}
+	out, err := exec.Command(openstackCmdPath, args...).CombinedOutput()
+	must(err)
+
+	var data struct {
+		ID string `json:"id"`
+	}
+	err = json.Unmarshal(out, &data)
+	must(err)
+	if data.ID == "" {
+		must(fmt.Errorf("could not find ID for role: %q", name))
+	}
+
+	return data.ID
 }
 
 func getUserConfirmation() {
