@@ -15,100 +15,123 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"os/exec"
+	"strings"
+
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/roles"
 )
 
-func migrateRole(oldRole, newRole string) {
-	// Step 1. Get IDs for the user give roles (since the user could have provided role
-	// names instead of IDs).
-	oldRoleID := getRoleID(oldRole)
-	newRoleID := getRoleID(newRole)
+func migrateRole(oldRoleName, newRoleName string) {
+	// Step 1. Get IDs for the user given role name.
+	oldRole := getRole(oldRoleName)
+	newRole := getRole(newRoleName)
 
 	// Step 2. Get role assignments.
-	assignments := getRoleAssignments(false, oldRoleID, newRoleID)
+	assignments := getRoleAssignments(oldRoleName, newRoleName)
 
 	// Step 2. Find which user/group don't have the newRole and add the newRole to them.
 	var roleAddList []roleAssignment
 	for _, v := range assignments {
 		exist := false
-		for _, r := range v.roles {
-			if r == newRoleID {
+		for _, r := range v.assignedRoles {
+			if r.ID == newRole.ID {
 				exist = true
 			}
 		}
-		if !exist {
+		if !exist && !v.Inherited {
 			roleAddList = append(roleAddList, v)
 		}
 	}
 	if len(roleAddList) > 0 {
-		fmt.Printf("Role \"%s = %s\" will be added to the following role assignments:\n", newRole, newRoleID)
+		fmt.Printf("Role %q will be added to the following role assignments:\n", newRoleName)
 		printRoleAssignments(roleAddList)
 
-		fmt.Println()
 		getUserConfirmation()
 		fmt.Println()
 
 		for _, v := range roleAddList {
-			args := buildRoleMigrateArgs("add", newRoleID, v)
-			out, err := exec.Command(openstackCmdPath, args...).CombinedOutput()
-			fmt.Println(string(out))
-			must(err)
+			err := assignRole(newRole, v)
+			userGroup := userOrGroup(v.User, v.Group)
+			projectDomain := projectOrDomain(v.Scope.Project, v.Scope.Domain)
+			if err != nil {
+				fmt.Printf("ERROR: could not assign role %q to %q on %q: %s\n",
+					newRoleName, userGroup, projectDomain, err.Error())
+			} else {
+				fmt.Printf("INFO: successfully assigned role %q to %q on %q\n",
+					newRoleName, userGroup, projectDomain)
+			}
 		}
+
+		fmt.Println(strings.Repeat("=", 79))
+		fmt.Println()
 	}
 
 	// Step 3. Remove oldRole from those user/group where both oldRole and newRole exists.
-	// Get fresh listing from OpenStack.
-	assignments = getRoleAssignments(false, oldRoleID, newRoleID)
+	assignments = getRoleAssignments(oldRoleName, newRoleName) // get up-to-date assignments list from Keystone
 	var roleRemoveList []roleAssignment
 	for _, v := range assignments {
 		foundOld := false
 		foundNew := false
-		for _, r := range v.roles {
-			if r == oldRoleID {
+		for _, r := range v.assignedRoles {
+			switch r.ID {
+			case oldRole.ID:
 				foundOld = true
-			}
-			if r == newRoleID {
+			case newRole.ID:
 				foundNew = true
 			}
 		}
-		if foundOld && foundNew {
+		if foundOld && foundNew && !v.Inherited {
 			roleRemoveList = append(roleRemoveList, v)
 		}
 	}
 	if len(roleRemoveList) > 0 {
-		fmt.Printf("Role \"%s = %s\" will be removed from the following role assignments:\n", oldRole, oldRoleID)
+		fmt.Printf("Role %q will be removed from the following role assignments:\n", oldRoleName)
 		printRoleAssignments(roleRemoveList)
 
-		fmt.Println()
 		getUserConfirmation()
 		fmt.Println()
 
 		for _, v := range roleRemoveList {
-			args := buildRoleMigrateArgs("remove", oldRoleID, v)
-			out, err := exec.Command(openstackCmdPath, args...).CombinedOutput()
-			fmt.Println(string(out))
-			must(err)
+			err := unassignRole(oldRole, v)
+			userGroup := userOrGroup(v.User, v.Group)
+			projectDomain := projectOrDomain(v.Scope.Project, v.Scope.Domain)
+			if err != nil {
+				fmt.Printf("ERROR: could not unassign role %q from %q on %q: %s\n",
+					oldRoleName, userGroup, projectDomain, err.Error())
+			} else {
+				fmt.Printf("INFO: successfully unassigned role %q from %q on %q\n",
+					oldRoleName, userGroup, projectDomain)
+			}
 		}
 	}
 }
 
-func getRoleID(name string) string {
-	args := []string{"role", "show", name, "-f", "json"}
-	out, err := exec.Command(openstackCmdPath, args...).CombinedOutput()
-	must(err)
-
-	var data struct {
-		ID string `json:"id"`
+func assignRole(role roles.Role, assignment roleAssignment) error {
+	opts := roles.AssignOpts{
+		GroupID: assignment.Group.ID,
 	}
-	err = json.Unmarshal(out, &data)
-	must(err)
-	if data.ID == "" {
-		must(fmt.Errorf("could not find ID for role: %q", name))
+	if opts.GroupID == "" {
+		opts.UserID = assignment.User.ID
 	}
+	opts.DomainID = assignment.Scope.Domain.ID
+	if opts.DomainID == "" {
+		opts.ProjectID = assignment.Scope.Project.ID
+	}
+	return roles.Assign(identityClient, role.ID, opts).ExtractErr()
+}
 
-	return data.ID
+func unassignRole(role roles.Role, assignment roleAssignment) error {
+	opts := roles.UnassignOpts{
+		GroupID: assignment.Group.ID,
+	}
+	if opts.GroupID == "" {
+		opts.UserID = assignment.User.ID
+	}
+	opts.DomainID = assignment.Scope.Domain.ID
+	if opts.DomainID == "" {
+		opts.ProjectID = assignment.Scope.Project.ID
+	}
+	return roles.Unassign(identityClient, role.ID, opts).ExtractErr()
 }
 
 func getUserConfirmation() {
@@ -119,32 +142,4 @@ func getUserConfirmation() {
 	if input != yes {
 		must(fmt.Errorf("expected %q, got %q", yes, input))
 	}
-}
-
-func buildRoleMigrateArgs(subcommand, role string, v roleAssignment) []string {
-	args := []string{"role", subcommand, role}
-
-	switch {
-	case v.user != "":
-		args = append(args, "--user", v.user)
-	case v.group != "":
-		args = append(args, "--group", v.group)
-	default:
-		// This probably won't happen but just in case.
-		must(fmt.Errorf("user/group not found in %+v", v))
-	}
-
-	switch {
-	case v.system != "":
-		args = append(args, "--system", v.system)
-	case v.domain != "":
-		args = append(args, "--domain", v.domain)
-	case v.project != "":
-		args = append(args, "--project", v.project)
-	default:
-		// This probably won't happen but just in case.
-		must(fmt.Errorf("system/domain/project not found in %+v", v))
-	}
-
-	return args
 }

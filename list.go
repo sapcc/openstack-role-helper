@@ -15,126 +15,148 @@
 package main
 
 import (
-	"encoding/json"
+	"fmt"
 	"os"
-	"os/exec"
 	"sort"
 	"strings"
 
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/roles"
+	"github.com/gophercloud/gophercloud/pagination"
 	"github.com/olekukonko/tablewriter"
 )
 
-// roleResult is the JSON response that is returned by OpenStack CLI for
-// `role assignment list` sub-command.
-type roleAssignmentResultFromOS struct {
-	Domain    string `json:"Domain"`
-	Group     string `json:"Group"`
-	Inherited bool   `json:"Inherited"`
-	Project   string `json:"Project"`
-	Role      string `json:"Role"`
-	System    string `json:"System"`
-	User      string `json:"User"`
+func getRole(name string) roles.Role {
+	pages, err := roles.List(identityClient, roles.ListOpts{Name: name}).AllPages()
+	must(err)
+	roles, err := roles.ExtractRoles(pages)
+	must(err)
+	if len(roles) != 1 {
+		must(fmt.Errorf("expected one Role in response, got: %d", len(roles)))
+	}
+	return roles[0]
 }
 
 type roleAssignment struct {
-	user    string
-	group   string
-	system  string
-	domain  string
-	project string
-	roles   []string
+	Role  roles.AssignedRole `json:"role,omitempty"`
+	Scope struct {
+		roles.Scope
+		InheritedTo string `json:"OS-INHERIT:inherited_to,omitempty"`
+	} `json:"scope,omitempty"`
+	User  roles.User  `json:"user,omitempty"`
+	Group roles.Group `json:"group,omitempty"`
+
+	Inherited bool `json:"-"` // this field is modified by getRoleAssignments()
+	// All roles that are assigned to this particular user/group for this particular scope.
+	assignedRoles []roles.AssignedRole `json:"-"`
 }
 
-func getRoleAssignments(names bool, roles ...string) []roleAssignment {
-	var roleAssignmentFromOS []roleAssignmentResultFromOS
-	for _, r := range roles {
-		args := []string{"role", "assignment", "list", "-f", "json", "--role", r}
-		if names {
-			args = append(args, "--names")
-		}
-		out, err := exec.Command(openstackCmdPath, args...).CombinedOutput()
+func extractRoleAssignments(r pagination.Page) ([]roleAssignment, error) {
+	var s struct {
+		RoleAssignments []roleAssignment `json:"role_assignments"`
+	}
+	err := (r.(roles.RoleAssignmentPage)).ExtractInto(&s)
+	return s.RoleAssignments, err
+}
+
+func getRoleAssignments(roleNames ...string) []roleAssignment {
+	includeNames := true
+	var assignments []roleAssignment
+	for _, v := range roleNames {
+		r := getRole(v)
+		pages, err := roles.ListAssignments(identityClient, roles.ListAssignmentsOpts{
+			RoleID:       r.ID,
+			IncludeNames: &includeNames,
+		}).AllPages()
+		must(err)
+		aList, err := extractRoleAssignments(pages)
 		must(err)
 
-		var data []roleAssignmentResultFromOS
-		err = json.Unmarshal(out, &data)
-		must(err)
-		roleAssignmentFromOS = append(roleAssignmentFromOS, data...)
+		for _, a := range aList {
+			if a.Scope.InheritedTo != "" {
+				a.Inherited = true
+			}
+			assignments = append(assignments, a)
+		}
 	}
 
-	// map[user/group]map[system/domain/project]roleAssignment
-	assignments := make(map[string]map[string]roleAssignment)
-	for _, v := range roleAssignmentFromOS {
-		var user string
-		switch {
-		case v.User != "":
-			user = v.User
-		case v.Group != "":
-			user = v.Group
-		}
-		var scope string
-		switch {
-		case v.System != "":
-			scope = v.System
-		case v.Domain != "":
-			scope = v.Domain
-		case v.Project != "":
-			scope = v.Project
-		}
+	// map[user/group]map[scope]roleAssignment
+	uniqueAssignments := make(map[string]map[string]roleAssignment)
+	for _, v := range assignments {
+		userGroup := userOrGroup(v.User, v.Group)
+		scope := projectOrDomain(v.Scope.Project, v.Scope.Domain)
 
-		ra, exists := assignments[user][scope]
-		if !exists {
-			if _, ok := assignments[user]; !ok {
-				assignments[user] = make(map[string]roleAssignment)
+		a, ok := uniqueAssignments[userGroup][scope]
+		if !ok {
+			if _, ok := uniqueAssignments[userGroup]; !ok {
+				uniqueAssignments[userGroup] = make(map[string]roleAssignment)
 			}
-			ra = roleAssignment{
-				user:    v.User,
-				group:   v.Group,
-				system:  v.System,
-				domain:  v.Domain,
-				project: v.Project,
-			}
+			a = v
 		}
-		ra.roles = append(ra.roles, v.Role)
-		assignments[user][scope] = ra
+		a.assignedRoles = append(a.assignedRoles, v.Role)
+		uniqueAssignments[userGroup][scope] = a
 	}
 
 	var result []roleAssignment
-	for _, scopeMap := range assignments {
+	for _, scopeMap := range uniqueAssignments {
 		for _, v := range scopeMap {
-			sort.Strings(v.roles)
 			result = append(result, v)
 		}
 	}
+
 	return result
 }
 
 func printRoleAssignments(data []roleAssignment) {
 	sort.SliceStable(data, func(i, j int) bool {
 		// sort by user and group
-		return data[i].user != "" && data[j].group != ""
+		return data[i].User.ID != "" && data[j].Group.ID != ""
 	})
 	sort.SliceStable(data, func(i, j int) bool {
-		// sort by project, domain, and system
-		if data[i].project != "" && data[j].domain != "" {
-			return true
-		}
-		return data[i].domain != "" && data[j].system != ""
+		// sort by project and domain
+		return data[i].Scope.Project.ID != "" && data[j].Scope.Domain.ID != ""
 	})
 	sort.SliceStable(data, func(i, j int) bool {
 		// sort by roles
-		iRoles := data[i].roles
-		jRoles := data[j].roles
+		iRoles := data[i].assignedRoles
+		jRoles := data[j].assignedRoles
 		if len(iRoles) < len(jRoles) {
 			return true
 		}
-		return strings.Join(iRoles, ",") < strings.Join(jRoles, ",")
+
+		iRoleNames := make([]string, 0, len(iRoles))
+		for _, v := range iRoles {
+			iRoleNames = append(iRoleNames, v.Name)
+		}
+		jRoleNames := make([]string, 0, len(jRoles))
+		for _, v := range jRoles {
+			jRoleNames = append(jRoleNames, v.Name)
+		}
+
+		return strings.Join(iRoleNames, ",") < strings.Join(jRoleNames, ",")
 	})
 
+	boolToStr := func(b bool) string {
+		if b {
+			return "True"
+		}
+		return ""
+	}
+
 	var rows [][]string
-	rows = append(rows, []string{"role(s)", "user", "group", "project", "domain", "system"})
+	rows = append(rows, []string{"role(s)", "user", "group", "project", "domain", "inherited"})
 	for _, v := range data {
+		roleNames := make([]string, 0, len(v.assignedRoles))
+		for _, v := range v.assignedRoles {
+			roleNames = append(roleNames, v.Name)
+		}
+
 		rows = append(rows, []string{
-			strings.Join(v.roles, ","), v.user, v.group, v.project, v.domain, v.system,
+			strings.Join(roleNames, ","),
+			nameAtScope(v.User.Name, v.User.Domain.Name),
+			nameAtScope(v.Group.Name, v.Group.Domain.Name),
+			nameAtScope(v.Scope.Project.Name, v.Scope.Project.Domain.Name),
+			v.Scope.Domain.Name,
+			boolToStr(v.Inherited),
 		})
 	}
 
@@ -142,4 +164,25 @@ func printRoleAssignments(data []roleAssignment) {
 	t.SetHeader(rows[0])
 	t.AppendBulk(rows[1:])
 	t.Render()
+}
+
+func nameAtScope(name, scope string) string {
+	if name == "" {
+		return ""
+	}
+	return fmt.Sprintf("%s@%s", name, scope)
+}
+
+func userOrGroup(user roles.User, group roles.Group) string {
+	if user.ID != "" {
+		return nameAtScope(user.Name, user.Domain.Name)
+	}
+	return nameAtScope(group.Name, group.Domain.Name)
+}
+
+func projectOrDomain(project roles.Project, domain roles.Domain) string {
+	if project.ID != "" {
+		return nameAtScope(project.Name, project.Domain.Name)
+	}
+	return domain.Name
 }

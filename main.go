@@ -16,70 +16,81 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"os"
-	"os/exec"
 
 	"github.com/alecthomas/kong"
+	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack"
+	"github.com/gophercloud/utils/client"
+	"github.com/gophercloud/utils/openstack/clientconfig"
 )
 
-// openstackCmdPath is the absolute path to the `openstack` CLI.
-var openstackCmdPath string
-
-type cli struct {
-	List    listCmd    `cmd:"" help:"List role assignments."`
-	Migrate migrateCmd `cmd:"" help:"Migrate a role assignment for a user/group on system/domain/project, i.e. add a new role and remove an existing role."`
-}
-
-type listCmd struct {
-	Roles []string `arg:"" help:"Roles (name or ID)."`
-}
-
-type migrateCmd struct {
-	OldRole struct {
-		// Note: var name needs to be same as enclosing struct
-		OldRole string `arg:"" help:"Role (name or ID)."`
-		To      struct {
-			NewRole struct {
-				// Note: var name needs to be same as enclosing struct
-				NewRole string `arg:"" help:"Role (name or ID)."`
-			} `arg:""`
-		} `cmd:""`
-	} `arg:""`
-}
+// identityClient is the ServiceClient for Keystone v3.
+var identityClient *gophercloud.ServiceClient
 
 func main() {
-	openstackCmdPath = getExecutablePath("openstack")
-
 	var cli cli //nolint:govet
 	ctx := kong.Parse(&cli,
 		kong.Name("openstack-role-helper"),
-		kong.Description("Wrapper around OpenStack CLI for performing mass role operations."),
+		kong.Description("Tool for performing mass role operations."),
 		kong.UsageOnError(),
 		kong.ConfigureHelp(kong.HelpOptions{Compact: true}),
 	)
 
+	var err error
+	identityClient, err = authenticate(&cli.openstackFlags, cli.Debug)
+	must(err)
+
 	switch ctx.Command() {
-	case "list <roles>":
-		result := getRoleAssignments(true, cli.List.Roles...)
+	case "list <role-names>":
+		result := getRoleAssignments(cli.List.RoleNames...)
 		printRoleAssignments(result)
-	case "migrate <old-role> to <new-role>":
-		migrateRole(cli.Migrate.OldRole.OldRole, cli.Migrate.OldRole.To.NewRole.NewRole)
+	case "migrate <old-role-name> to <new-role-name>":
+		migrateRole(cli.Migrate.OldRoleName.OldRoleName, cli.Migrate.OldRoleName.To.NewRoleName.NewRoleName)
 	}
+}
+
+// authenticate authenticates against OpenStack and returns the necessary
+// service clients.
+func authenticate(osFlags *openstackFlags, debug bool) (identityClient *gophercloud.ServiceClient, err error) {
+	// Update OpenStack environment variables, if value provided as flag.
+	updateOpenStackEnvVars(osFlags)
+
+	ao, err := clientconfig.AuthOptions(nil)
+	if err != nil {
+		return nil, fmt.Errorf("could not get auth variables: %s", err.Error())
+	}
+
+	provider, err := openstack.NewClient(ao.IdentityEndpoint)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create an OpenStack client: %s", err.Error())
+	}
+	if debug {
+		provider.HTTPClient = http.Client{
+			Transport: &client.RoundTripper{
+				Rt:     &http.Transport{},
+				Logger: &client.DefaultLogger{},
+			},
+		}
+	}
+
+	err = openstack.Authenticate(provider, *ao)
+	if err != nil {
+		return nil, fmt.Errorf("cannot connect to OpenStack: %s", err.Error())
+	}
+
+	identityClient, err = openstack.NewIdentityV3(provider, gophercloud.EndpointOpts{})
+	if err != nil {
+		return nil, fmt.Errorf("could not initialize identity client: %s", err.Error())
+	}
+
+	return identityClient, nil
 }
 
 func must(err error) {
 	if err != nil {
-		fmt.Printf("Error: %s\n", err.Error())
+		fmt.Printf("ERROR: %s\n", err.Error())
 		os.Exit(1)
 	}
-}
-
-// exec.Command() already uses LookPath() in case an executable name is
-// provided instead of a path, but we do this manually for two reasons:
-// 1. To terminate the program early in case the executable path could not be found.
-// 2. To save multiple LookPath() calls for the same executable.
-func getExecutablePath(fileName string) string {
-	path, err := exec.LookPath(fileName)
-	must(err)
-	return path
 }
