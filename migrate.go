@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/roles"
 )
 
@@ -38,7 +39,7 @@ func migrateRole(oldRoleName, newRoleName string) {
 				exist = true
 			}
 		}
-		if !exist && !v.Inherited {
+		if !exist {
 			roleAddList = append(roleAddList, v)
 		}
 	}
@@ -80,7 +81,7 @@ func migrateRole(oldRoleName, newRoleName string) {
 				foundNew = true
 			}
 		}
-		if foundOld && foundNew && !v.Inherited {
+		if foundOld && foundNew {
 			roleRemoveList = append(roleRemoveList, v)
 		}
 	}
@@ -107,6 +108,57 @@ func migrateRole(oldRoleName, newRoleName string) {
 }
 
 func assignRole(role roles.Role, assignment roleAssignment) error {
+	url, err := buildAssignURL(role, assignment)
+	if err != nil {
+		return err
+	}
+
+	resp, err := identityClient.Put(url, nil, nil, &gophercloud.RequestOpts{
+		OkCodes: []int{204},
+	})
+	_, _, err = gophercloud.ParseResponse(resp, err)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func unassignRole(role roles.Role, assignment roleAssignment) error {
+	url, err := buildAssignURL(role, assignment)
+	if err != nil {
+		return err
+	}
+
+	resp, err := identityClient.Delete(url, &gophercloud.RequestOpts{
+		OkCodes: []int{204},
+	})
+	_, _, err = gophercloud.ParseResponse(resp, err)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Helper functions
+
+const (
+	rolePath                = "roles"
+	osInheritancePath       = "OS-INHERIT"
+	inheritedToProjectsPath = "inherited_to_projects"
+)
+
+func assignURL(targetType, targetID, actorType, actorID, roleID string) string {
+	return identityClient.ServiceURL(targetType, targetID, actorType, actorID, rolePath, roleID)
+}
+
+func assignWithInheritanceURL(targetType, targetID, actorType, actorID, roleID string) string {
+	return identityClient.ServiceURL(osInheritancePath, targetType, targetID, actorType, actorID, rolePath, roleID, inheritedToProjectsPath)
+}
+
+func buildAssignURL(role roles.Role, assignment roleAssignment) (string, error) {
 	opts := roles.AssignOpts{
 		GroupID: assignment.Group.ID,
 	}
@@ -117,21 +169,39 @@ func assignRole(role roles.Role, assignment roleAssignment) error {
 	if opts.DomainID == "" {
 		opts.ProjectID = assignment.Scope.Project.ID
 	}
-	return roles.Assign(identityClient, role.ID, opts).ExtractErr()
-}
 
-func unassignRole(role roles.Role, assignment roleAssignment) error {
-	opts := roles.UnassignOpts{
-		GroupID: assignment.Group.ID,
+	// Check xor conditions
+	_, err := gophercloud.BuildRequestBody(opts, "")
+	if err != nil {
+		return "", err
 	}
-	if opts.GroupID == "" {
-		opts.UserID = assignment.User.ID
+
+	// Get corresponding URL
+	var targetID string
+	var targetType string
+	if opts.ProjectID != "" {
+		targetID = opts.ProjectID
+		targetType = "projects"
+	} else {
+		targetID = opts.DomainID
+		targetType = "domains"
 	}
-	opts.DomainID = assignment.Scope.Domain.ID
-	if opts.DomainID == "" {
-		opts.ProjectID = assignment.Scope.Project.ID
+
+	var actorID string
+	var actorType string
+	if opts.UserID != "" {
+		actorID = opts.UserID
+		actorType = "users"
+	} else {
+		actorID = opts.GroupID
+		actorType = "groups"
 	}
-	return roles.Unassign(identityClient, role.ID, opts).ExtractErr()
+
+	urlFunc := assignURL
+	if assignment.Inherited {
+		urlFunc = assignWithInheritanceURL
+	}
+	return urlFunc(targetType, targetID, actorType, actorID, role.ID), nil
 }
 
 func getUserConfirmation() {

@@ -21,7 +21,7 @@ type cli struct {
 	openstackFlags
 
 	List    listCmd    `cmd:"" help:"List role assignments."`
-	Migrate migrateCmd `cmd:"" help:"Migrate a role assignment for a user/group on a project/domain, i.e. add a new role and remove an existing role. Note: inherited role assignments are skipped."`
+	Migrate migrateCmd `cmd:"" help:"Migrate a role assignment for a user/group on a project/domain, i.e. add a new role and remove an existing role."`
 }
 
 type openstackFlags struct {
