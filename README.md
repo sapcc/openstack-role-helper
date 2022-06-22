@@ -6,7 +6,7 @@ users/groups from an existing role to a new role.
 ## Installation
 
 ```
-go install github.com/sapcc/openstack-role-helper
+go install github.com/sapcc/openstack-role-helper@latest
 ```
 
 Alternatively, you can build with `make` or install with `make install`. The latter
