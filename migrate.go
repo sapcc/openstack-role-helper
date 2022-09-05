@@ -113,7 +113,7 @@ func assignRole(role roles.Role, assignment roleAssignment) error {
 		return err
 	}
 
-	resp, err := identityClient.Put(url, nil, nil, &gophercloud.RequestOpts{
+	resp, err := identityClient.Put(url, nil, nil, &gophercloud.RequestOpts{ //nolint:bodyclose // handled by gophercloud
 		OkCodes: []int{204},
 	})
 	_, _, err = gophercloud.ParseResponse(resp, err)
@@ -130,7 +130,7 @@ func unassignRole(role roles.Role, assignment roleAssignment) error {
 		return err
 	}
 
-	resp, err := identityClient.Delete(url, &gophercloud.RequestOpts{
+	resp, err := identityClient.Delete(url, &gophercloud.RequestOpts{ //nolint:bodyclose // handled by gophercloud
 		OkCodes: []int{204},
 	})
 	_, _, err = gophercloud.ParseResponse(resp, err)

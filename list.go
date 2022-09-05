@@ -28,12 +28,12 @@ import (
 func getRole(name string) roles.Role {
 	pages, err := roles.List(identityClient, roles.ListOpts{Name: name}).AllPages()
 	must(err)
-	roles, err := roles.ExtractRoles(pages)
+	extractedRoles, err := roles.ExtractRoles(pages)
 	must(err)
-	if len(roles) != 1 {
-		must(fmt.Errorf("expected one Role in response, got: %d", len(roles)))
+	if len(extractedRoles) != 1 {
+		must(fmt.Errorf("expected one Role in response, got: %d", len(extractedRoles)))
 	}
-	return roles[0]
+	return extractedRoles[0]
 }
 
 type roleAssignment struct {
