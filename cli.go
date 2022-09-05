@@ -14,7 +14,11 @@
 
 package main
 
-import "os"
+import (
+	"os"
+
+	"github.com/sapcc/go-bits/must"
+)
 
 type cli struct {
 	Debug bool `short:"d" help:"Enable debug mode (will print API requests and responses)."`
@@ -64,13 +68,13 @@ func setenvIfVal(key, val string) error {
 }
 
 func updateOpenStackEnvVars(v *openstackFlags) {
-	must(setenvIfVal("OS_AUTH_URL", v.OSAuthURL))
-	must(setenvIfVal("OS_USERNAME", v.OSUsername))
-	must(setenvIfVal("OS_PASSWORD", v.OSPassword))
-	must(setenvIfVal("OS_USER_DOMAIN_ID", v.OSUserDomainID))
-	must(setenvIfVal("OS_USER_DOMAIN_NAME", v.OSUserDomainName))
-	must(setenvIfVal("OS_PROJECT_ID", v.OSProjectID))
-	must(setenvIfVal("OS_PROJECT_NAME", v.OSProjectName))
-	must(setenvIfVal("OS_PROJECT_DOMAIN_ID", v.OSProjectDomainID))
-	must(setenvIfVal("OS_PROJECT_DOMAIN_NAME", v.OSProjectDomainName))
+	must.Succeed(setenvIfVal("OS_AUTH_URL", v.OSAuthURL))
+	must.Succeed(setenvIfVal("OS_USERNAME", v.OSUsername))
+	must.Succeed(setenvIfVal("OS_PASSWORD", v.OSPassword))
+	must.Succeed(setenvIfVal("OS_USER_DOMAIN_ID", v.OSUserDomainID))
+	must.Succeed(setenvIfVal("OS_USER_DOMAIN_NAME", v.OSUserDomainName))
+	must.Succeed(setenvIfVal("OS_PROJECT_ID", v.OSProjectID))
+	must.Succeed(setenvIfVal("OS_PROJECT_NAME", v.OSProjectName))
+	must.Succeed(setenvIfVal("OS_PROJECT_DOMAIN_ID", v.OSProjectDomainID))
+	must.Succeed(setenvIfVal("OS_PROJECT_DOMAIN_NAME", v.OSProjectDomainName))
 }

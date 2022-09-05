@@ -23,15 +23,14 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/roles"
 	"github.com/gophercloud/gophercloud/pagination"
 	"github.com/olekukonko/tablewriter"
+	"github.com/sapcc/go-bits/must"
 )
 
 func getRole(name string) roles.Role {
-	pages, err := roles.List(identityClient, roles.ListOpts{Name: name}).AllPages()
-	must(err)
-	extractedRoles, err := roles.ExtractRoles(pages)
-	must(err)
+	pages := must.Return(roles.List(identityClient, roles.ListOpts{Name: name}).AllPages())
+	extractedRoles := must.Return(roles.ExtractRoles(pages))
 	if len(extractedRoles) != 1 {
-		must(fmt.Errorf("expected one Role in response, got: %d", len(extractedRoles)))
+		must.Succeed(fmt.Errorf("expected one Role in response, got: %d", len(extractedRoles)))
 	}
 	return extractedRoles[0]
 }
@@ -63,13 +62,11 @@ func getRoleAssignments(roleNames ...string) []roleAssignment {
 	var assignments []roleAssignment
 	for _, v := range roleNames {
 		r := getRole(v)
-		pages, err := roles.ListAssignments(identityClient, roles.ListAssignmentsOpts{
+		pages := must.Return(roles.ListAssignments(identityClient, roles.ListAssignmentsOpts{
 			RoleID:       r.ID,
 			IncludeNames: &includeNames,
-		}).AllPages()
-		must(err)
-		aList, err := extractRoleAssignments(pages)
-		must(err)
+		}).AllPages())
+		aList := must.Return(extractRoleAssignments(pages))
 
 		for _, a := range aList {
 			if a.Scope.InheritedTo != "" {

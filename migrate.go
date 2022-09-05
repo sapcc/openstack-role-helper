@@ -20,6 +20,7 @@ import (
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/roles"
+	"github.com/sapcc/go-bits/must"
 )
 
 func migrateRole(oldRoleName, newRoleName string) {
@@ -210,6 +211,6 @@ func getUserConfirmation() {
 	var input string
 	fmt.Scanln(&input)
 	if input != yes {
-		must(fmt.Errorf("expected %q, got %q", yes, input))
+		must.Succeed(fmt.Errorf("expected %q, got %q", yes, input))
 	}
 }

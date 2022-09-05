@@ -17,13 +17,13 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/alecthomas/kong"
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/utils/client"
 	"github.com/gophercloud/utils/openstack/clientconfig"
+	"github.com/sapcc/go-bits/must"
 )
 
 // identityClient is the ServiceClient for Keystone v3.
@@ -38,9 +38,7 @@ func main() {
 		kong.ConfigureHelp(kong.HelpOptions{Compact: true}),
 	)
 
-	var err error
-	identityClient, err = authenticate(&cli.openstackFlags, cli.Debug)
-	must(err)
+	identityClient = must.Return(authenticate(&cli.openstackFlags, cli.Debug))
 
 	switch ctx.Command() {
 	case "list <role-names>":
@@ -86,11 +84,4 @@ func authenticate(osFlags *openstackFlags, debug bool) (identityClient *gophercl
 	}
 
 	return identityClient, nil
-}
-
-func must(err error) {
-	if err != nil {
-		fmt.Printf("ERROR: %s\n", err.Error())
-		os.Exit(1)
-	}
 }
