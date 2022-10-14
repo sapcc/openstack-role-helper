@@ -19,8 +19,8 @@ github.com/olekukonko/tablewriter v0.0.5 h1:P2Ga83D34wi1o9J6Wh1mRuqd4mF/x/lgBS7N
 github.com/olekukonko/tablewriter v0.0.5/go.mod h1:hPp6KlRPjbx+hW8ykQs1w3UBbZlj6HuIJcUGPhkA7kY=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/sapcc/go-bits v0.0.0-20220919133313-cbe76a8983ac h1:MsAwYxjc45hgUfStA9xr3VRMKzRscAFBG3O1vqOmL90=
-github.com/sapcc/go-bits v0.0.0-20220919133313-cbe76a8983ac/go.mod h1:rxtXaI5YwlaopZXSED/4GKTz4Azq9mAuywdz+FQ5ns0=
+github.com/sapcc/go-bits v0.0.0-20221014034219-692408a2c3e8 h1:J/yW5kU/14X1V6VQWfmTwHX+e9l+ceqvWAf0ZRoPiNo=
+github.com/sapcc/go-bits v0.0.0-20221014034219-692408a2c3e8/go.mod h1:WlwCixseRkUQ1xLLHjxmUy0wObEOC5s1tRMT2ZTTgRQ=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.7.2 h1:4jaiDzPyXQvSd7D0EjG45355tLlV3VOECpq10pLC+8s=
 github.com/stretchr/testify v1.7.2/go.mod h1:R6va5+xMeoiuVRoj+gSkQ7d3FALtqAAGI1FQKckRals=
