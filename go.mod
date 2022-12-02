@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/alecthomas/kong v0.7.1
 	github.com/gophercloud/gophercloud v1.1.0
-	github.com/gophercloud/utils v0.0.0-20221124081324-7bac6f5cdf99
+	github.com/gophercloud/utils v0.0.0-20221128194715-5caf33c866da
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/sapcc/go-bits v0.0.0-20221118142214-0656ace5e9a1
 )
