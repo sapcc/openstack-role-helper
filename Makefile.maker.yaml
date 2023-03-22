@@ -6,15 +6,9 @@ binaries:
 golangciLint:
   createConfig: true
 
-renovate:
-  enabled: true
-
 githubWorkflow:
   global:
     defaultBranch: main
-    assignees:
-      - talal
-      - SuperSandro2000
     ignorePaths: [ "**.md" ] # all Markdown files
   ci:
     enabled: true
@@ -25,3 +19,9 @@ githubWorkflow:
   spellCheck:
     enabled: true
     ignorePaths: [] # override global setting so that nothing is ignored
+
+renovate:
+  enabled: true
+  assignees:
+    - talal
+    - SuperSandro2000
