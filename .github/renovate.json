@@ -9,6 +9,7 @@
     "talal",
     "SuperSandro2000"
   ],
+  "commitMessageAction": "Renovate: Update",
   "constraints": {
     "go": "1.20"
   },
