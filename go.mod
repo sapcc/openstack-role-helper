@@ -7,7 +7,7 @@ require (
 	github.com/gophercloud/gophercloud v1.3.0
 	github.com/gophercloud/utils v0.0.0-20230418172808-6eab72e966e1
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/sapcc/go-bits v0.0.0-20230427112005-83ae3f63bf8b
+	github.com/sapcc/go-bits v0.0.0-20230504084121-e1394d9f1b00
 )
 
 require (
