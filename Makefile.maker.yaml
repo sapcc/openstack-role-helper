@@ -1,7 +1,16 @@
+# Configuration file for <https://github.com/sapcc/go-makefile-maker>
+
+metadata:
+  url: https://github.com/sapcc/openstack-role-helper
+
 binaries:
   - name: openstack-role-helper
     fromPackage: .
     installTo: bin/
+
+golang:
+  enableVendoring: true
+  setGoModVersion: true
 
 golangciLint:
   createConfig: true
