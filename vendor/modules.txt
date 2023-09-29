@@ -1,7 +1,7 @@
 # github.com/alecthomas/kong v0.8.0
 ## explicit; go 1.18
 github.com/alecthomas/kong
-# github.com/gophercloud/gophercloud v1.6.0
+# github.com/gophercloud/gophercloud v1.7.0
 ## explicit; go 1.14
 github.com/gophercloud/gophercloud
 github.com/gophercloud/gophercloud/openstack
