@@ -19,8 +19,8 @@ github.com/mitchellh/go-homedir v1.1.0 h1:lukF9ziXFxDFPkA1vsr5zpc1XuPDn/wFntq5mG
 github.com/mitchellh/go-homedir v1.1.0/go.mod h1:SfyaCUpYCn1Vlf4IUYiD9fPX4A5wJrkLzIz1N1q0pr0=
 github.com/olekukonko/tablewriter v0.0.5 h1:P2Ga83D34wi1o9J6Wh1mRuqd4mF/x/lgBS7N7AbDhec=
 github.com/olekukonko/tablewriter v0.0.5/go.mod h1:hPp6KlRPjbx+hW8ykQs1w3UBbZlj6HuIJcUGPhkA7kY=
-github.com/sapcc/go-bits v0.0.0-20231005132843-e2fe7b6e61d2 h1:UznVcN8lKmzd1k9PnDum2qWR6FEsv8auHI99anXYDcI=
-github.com/sapcc/go-bits v0.0.0-20231005132843-e2fe7b6e61d2/go.mod h1:1lj6yb+ZHIJ7TGiAR46jrIbeO1w6TXG3qs51u3fbxZ4=
+github.com/sapcc/go-bits v0.0.0-20231012040926-125d71b35377 h1:j1bGjlrTbP9VnaHUL28VZNMUgE9M+qg1txA+sHvfcCM=
+github.com/sapcc/go-bits v0.0.0-20231012040926-125d71b35377/go.mod h1:4KxNEtNDkMSlsBsbtYhBkmxG3jTqv0YuotbXFn7DWs8=
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20210921155107-089bfa567519/go.mod h1:GvvjBRRGRdwPK5ydBHafDWAxML/pGHZbMvKqRZ5+Abc=
