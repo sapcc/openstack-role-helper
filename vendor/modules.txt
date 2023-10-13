@@ -1,4 +1,4 @@
-# github.com/alecthomas/kong v0.8.0
+# github.com/alecthomas/kong v0.8.1
 ## explicit; go 1.18
 github.com/alecthomas/kong
 # github.com/gophercloud/gophercloud v1.7.0
@@ -13,7 +13,7 @@ github.com/gophercloud/gophercloud/openstack/identity/v3/roles
 github.com/gophercloud/gophercloud/openstack/identity/v3/tokens
 github.com/gophercloud/gophercloud/openstack/utils
 github.com/gophercloud/gophercloud/pagination
-# github.com/gophercloud/utils v0.0.0-20230523080330-de873b9cf00d
+# github.com/gophercloud/utils v0.0.0-20231010081019-80377eca5d56
 ## explicit; go 1.15
 github.com/gophercloud/utils/client
 github.com/gophercloud/utils/env
