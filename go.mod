@@ -4,10 +4,10 @@ go 1.21
 
 require (
 	github.com/alecthomas/kong v0.8.1
-	github.com/gophercloud/gophercloud v1.8.0
+	github.com/gophercloud/gophercloud v1.9.0
 	github.com/gophercloud/utils v0.0.0-20231010081019-80377eca5d56
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/sapcc/go-bits v0.0.0-20240201031405-faeba90d7591
+	github.com/sapcc/go-bits v0.0.0-20240204232020-9be969f15f30
 )
 
 require (
