@@ -9,22 +9,15 @@ binaries:
     installTo: bin/
 
 golang:
-  enableVendoring: true
   setGoModVersion: true
 
 golangciLint:
   createConfig: true
 
 githubWorkflow:
-  global:
-    defaultBranch: main
   ci:
     enabled: true
-    ignorePaths: [ "**.md" ] # all Markdown files
-  license:
-    enabled: true
-  securityChecks:
-    enabled: true
+
 renovate:
   enabled: true
   assignees:
