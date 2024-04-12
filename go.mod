@@ -5,7 +5,7 @@ go 1.22
 require (
 	github.com/alecthomas/kong v0.9.0
 	github.com/gophercloud/gophercloud v1.11.0
-	github.com/gophercloud/utils v0.0.0-20231010081019-80377eca5d56
+	github.com/gophercloud/utils c2cbb9f23ff9
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/sapcc/go-bits v0.0.0-20240404145041-8c313ab7cd29
 )
