@@ -32,7 +32,7 @@ github.com/mitchellh/go-homedir
 # github.com/olekukonko/tablewriter v0.0.5
 ## explicit; go 1.12
 github.com/olekukonko/tablewriter
-# github.com/sapcc/go-bits v0.0.0-20240509162919-cebeb2d4844a
+# github.com/sapcc/go-bits v0.0.0-20240516084938-1c041b7a84ce
 ## explicit; go 1.22
 github.com/sapcc/go-bits/logg
 github.com/sapcc/go-bits/must
