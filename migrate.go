@@ -209,7 +209,7 @@ func getUserConfirmation() {
 	yes := "YES"
 	fmt.Printf("Type %q to continue: ", yes)
 	var input string
-	fmt.Scanln(&input)
+	_ = must.Return(fmt.Scanln(&input))
 	if input != yes {
 		must.Succeed(fmt.Errorf("expected %q, got %q", yes, input))
 	}
