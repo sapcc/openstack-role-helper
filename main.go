@@ -15,14 +15,17 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/alecthomas/kong"
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack"
-	"github.com/gophercloud/utils/client"
-	"github.com/gophercloud/utils/openstack/clientconfig"
+	"github.com/gophercloud/gophercloud/v2"
+	"github.com/gophercloud/gophercloud/v2/openstack"
+	"github.com/gophercloud/utils/v2/client"
+	"github.com/gophercloud/utils/v2/openstack/clientconfig"
+	"github.com/sapcc/go-bits/httpext"
 	"github.com/sapcc/go-bits/must"
 )
 
@@ -31,27 +34,28 @@ var identityClient *gophercloud.ServiceClient
 
 func main() {
 	var cli cli //nolint:govet
-	ctx := kong.Parse(&cli,
+	kongCtx := kong.Parse(&cli,
 		kong.Name("openstack-role-helper"),
 		kong.Description("Tool for performing mass role operations."),
 		kong.UsageOnError(),
 		kong.ConfigureHelp(kong.HelpOptions{Compact: true}),
 	)
 
-	identityClient = must.Return(authenticate(&cli.openstackFlags, cli.Debug))
+	ctx := httpext.ContextWithSIGINT(context.Background(), 10*time.Second)
+	identityClient = must.Return(authenticate(ctx, &cli.openstackFlags, cli.Debug))
 
-	switch ctx.Command() {
+	switch kongCtx.Command() {
 	case "list <role-names>":
-		result := getRoleAssignments(cli.List.RoleNames...)
+		result := getRoleAssignments(ctx, cli.List.RoleNames...)
 		printRoleAssignments(result)
 	case "migrate <old-role-name> to <new-role-name>":
-		migrateRole(cli.Migrate.OldRoleName.OldRoleName, cli.Migrate.OldRoleName.To.NewRoleName.NewRoleName)
+		migrateRole(ctx, cli.Migrate.OldRoleName.OldRoleName, cli.Migrate.OldRoleName.To.NewRoleName.NewRoleName)
 	}
 }
 
 // authenticate authenticates against OpenStack and returns the necessary
 // service clients.
-func authenticate(osFlags *openstackFlags, debug bool) (identityClient *gophercloud.ServiceClient, err error) {
+func authenticate(ctx context.Context, osFlags *openstackFlags, debug bool) (identityClient *gophercloud.ServiceClient, err error) {
 	// Update OpenStack environment variables, if value provided as flag.
 	updateOpenStackEnvVars(osFlags)
 
@@ -73,7 +77,7 @@ func authenticate(osFlags *openstackFlags, debug bool) (identityClient *gophercl
 		}
 	}
 
-	err = openstack.Authenticate(provider, *ao)
+	err = openstack.Authenticate(ctx, provider, *ao)
 	if err != nil {
 		return nil, fmt.Errorf("cannot connect to OpenStack: %s", err.Error())
 	}

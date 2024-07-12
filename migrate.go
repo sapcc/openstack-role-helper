@@ -15,21 +15,22 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack/identity/v3/roles"
+	"github.com/gophercloud/gophercloud/v2"
+	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/roles"
 	"github.com/sapcc/go-bits/must"
 )
 
-func migrateRole(oldRoleName, newRoleName string) {
+func migrateRole(ctx context.Context, oldRoleName, newRoleName string) {
 	// Step 1. Get IDs for the user given role name.
-	oldRole := getRole(oldRoleName)
-	newRole := getRole(newRoleName)
+	oldRole := getRole(ctx, oldRoleName)
+	newRole := getRole(ctx, newRoleName)
 
 	// Step 2. Get role assignments.
-	assignments := getRoleAssignments(oldRoleName, newRoleName)
+	assignments := getRoleAssignments(ctx, oldRoleName, newRoleName)
 
 	// Step 2. Find which user/group don't have the newRole and add the newRole to them.
 	var roleAddList []roleAssignment
@@ -52,7 +53,7 @@ func migrateRole(oldRoleName, newRoleName string) {
 		fmt.Println()
 
 		for _, v := range roleAddList {
-			err := assignRole(newRole, v)
+			err := assignRole(ctx, newRole, v)
 			userGroup := userOrGroup(v.User, v.Group)
 			projectDomain := projectOrDomain(v.Scope.Project, v.Scope.Domain)
 			if err != nil {
@@ -69,7 +70,7 @@ func migrateRole(oldRoleName, newRoleName string) {
 	}
 
 	// Step 3. Remove oldRole from those user/group where both oldRole and newRole exists.
-	assignments = getRoleAssignments(oldRoleName, newRoleName) // get up-to-date assignments list from Keystone
+	assignments = getRoleAssignments(ctx, oldRoleName, newRoleName) // get up-to-date assignments list from Keystone
 	var roleRemoveList []roleAssignment
 	for _, v := range assignments {
 		foundOld := false
@@ -94,7 +95,7 @@ func migrateRole(oldRoleName, newRoleName string) {
 		fmt.Println()
 
 		for _, v := range roleRemoveList {
-			err := unassignRole(oldRole, v)
+			err := unassignRole(ctx, oldRole, v)
 			userGroup := userOrGroup(v.User, v.Group)
 			projectDomain := projectOrDomain(v.Scope.Project, v.Scope.Domain)
 			if err != nil {
@@ -108,13 +109,13 @@ func migrateRole(oldRoleName, newRoleName string) {
 	}
 }
 
-func assignRole(role roles.Role, assignment roleAssignment) error {
+func assignRole(ctx context.Context, role roles.Role, assignment roleAssignment) error {
 	url, err := buildAssignURL(role, assignment)
 	if err != nil {
 		return err
 	}
 
-	resp, err := identityClient.Put(url, nil, nil, &gophercloud.RequestOpts{ //nolint:bodyclose // handled by gophercloud
+	resp, err := identityClient.Put(ctx, url, nil, nil, &gophercloud.RequestOpts{ //nolint:bodyclose // handled by gophercloud
 		OkCodes: []int{204},
 	})
 	_, _, err = gophercloud.ParseResponse(resp, err)
@@ -125,13 +126,13 @@ func assignRole(role roles.Role, assignment roleAssignment) error {
 	return nil
 }
 
-func unassignRole(role roles.Role, assignment roleAssignment) error {
+func unassignRole(ctx context.Context, role roles.Role, assignment roleAssignment) error {
 	url, err := buildAssignURL(role, assignment)
 	if err != nil {
 		return err
 	}
 
-	resp, err := identityClient.Delete(url, &gophercloud.RequestOpts{ //nolint:bodyclose // handled by gophercloud
+	resp, err := identityClient.Delete(ctx, url, &gophercloud.RequestOpts{ //nolint:bodyclose // handled by gophercloud
 		OkCodes: []int{204},
 	})
 	_, _, err = gophercloud.ParseResponse(resp, err)
