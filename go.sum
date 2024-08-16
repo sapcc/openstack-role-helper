@@ -4,12 +4,12 @@ github.com/alecthomas/kong v0.9.0 h1:G5diXxc85KvoV2f0ZRVuMsi45IrBgx9zDNGNj165aPA
 github.com/alecthomas/kong v0.9.0/go.mod h1:Y47y5gKfHp1hDc7CH7OeXgLIpp+Q2m1Ni0L5s3bI8Os=
 github.com/alecthomas/repr v0.4.0 h1:GhI2A8MACjfegCPVq9f1FLvIBS+DrQ2KQBFZP1iFzXc=
 github.com/alecthomas/repr v0.4.0/go.mod h1:Fr0507jx4eOXV7AlPV6AVZLYrLIuIeSOWtW57eE/O/4=
-github.com/gofrs/uuid/v5 v5.2.0 h1:qw1GMx6/y8vhVsx626ImfKMuS5CvJmhIKKtuyvfajMM=
-github.com/gofrs/uuid/v5 v5.2.0/go.mod h1:CDOjlDMVAtN56jqyRUZh58JT31Tiw7/oQyEXZV+9bD8=
+github.com/gofrs/uuid/v5 v5.3.0 h1:m0mUMr+oVYUdxpMLgSYCZiXe7PuVPnI94+OMeVBNedk=
+github.com/gofrs/uuid/v5 v5.3.0/go.mod h1:CDOjlDMVAtN56jqyRUZh58JT31Tiw7/oQyEXZV+9bD8=
 github.com/gophercloud/gophercloud/v2 v2.1.0 h1:91p6c+uMckXyx39nSIYjDirDBnPVFQq0q1njLNPX+NY=
 github.com/gophercloud/gophercloud/v2 v2.1.0/go.mod h1:f2hMRC7Kakbv5vM7wSGHrIPZh6JZR60GVHryJlF/K44=
-github.com/gophercloud/utils/v2 v2.0.0-20240809055823-c3c26a732379 h1:FwkprPS7XijuHvvyo2B8CyE8xOUU4R4fIyDvd6GdCKo=
-github.com/gophercloud/utils/v2 v2.0.0-20240809055823-c3c26a732379/go.mod h1:ktRLJv4IT9dt05ZNi1XSLaNWb8NUnWx1Q4S7uAhMgWg=
+github.com/gophercloud/utils/v2 v2.0.0-20240812072210-8ce1fc0f2894 h1:KgYK/Mf71IdN7+sq2cVmY8Jtumi26GxahN7nlV0ETBQ=
+github.com/gophercloud/utils/v2 v2.0.0-20240812072210-8ce1fc0f2894/go.mod h1:IXS9MKM8YBsr9G2xhnMAuiCOaNxmghQFQGi1p68+No0=
 github.com/hexops/gotextdiff v1.0.3 h1:gitA9+qJrrTCsiCl7+kh75nPqQt1cx4ZkudSTLoUqJM=
 github.com/hexops/gotextdiff v1.0.3/go.mod h1:pSWU5MAI3yDq+fZBTazCSJysOMbxWL1BSow5/V2vxeg=
 github.com/mattn/go-runewidth v0.0.9 h1:Lm995f3rfxdpd6TSmuVCHVb/QhupuXlYr8sCI/QdE+0=
@@ -18,8 +18,8 @@ github.com/mitchellh/go-homedir v1.1.0 h1:lukF9ziXFxDFPkA1vsr5zpc1XuPDn/wFntq5mG
 github.com/mitchellh/go-homedir v1.1.0/go.mod h1:SfyaCUpYCn1Vlf4IUYiD9fPX4A5wJrkLzIz1N1q0pr0=
 github.com/olekukonko/tablewriter v0.0.5 h1:P2Ga83D34wi1o9J6Wh1mRuqd4mF/x/lgBS7N7AbDhec=
 github.com/olekukonko/tablewriter v0.0.5/go.mod h1:hPp6KlRPjbx+hW8ykQs1w3UBbZlj6HuIJcUGPhkA7kY=
-github.com/sapcc/go-bits v0.0.0-20240808095728-a371e948855b h1:fKFAOsPulK4eZnZ2d17cbHZlVSdv/XiKJHEV2j3VVk0=
-github.com/sapcc/go-bits v0.0.0-20240808095728-a371e948855b/go.mod h1:Fz3uUsye7E078/uhq5WRVDCSCqr9v9DOEKKQXSfij1M=
+github.com/sapcc/go-bits v0.0.0-20240815085238-fce0691187a2 h1:8nHTlhgOkaFpldzDnU5wzwkSVC42VEac/dmR6psnS/0=
+github.com/sapcc/go-bits v0.0.0-20240815085238-fce0691187a2/go.mod h1:3VWkrB6b9+KclNomLo0a5bUvdORmes80tC5QWHwmz44=
 github.com/sergi/go-diff v1.3.1 h1:xkr+Oxo4BOQKmkn/B9eMK0g5Kg/983T9DqqPHwYqD+8=
 github.com/sergi/go-diff v1.3.1/go.mod h1:aMJSSKb2lpPvRNec0+w3fl7LP9IOFzdc9Pa4NFbPK1I=
 golang.org/x/sys v0.24.0 h1:Twjiwq9dn6R1fQcyiK+wQyHWfaz/BJB+YIpzU/Cv3Xg=
