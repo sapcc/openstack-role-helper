@@ -21,5 +21,4 @@ githubWorkflow:
 renovate:
   enabled: true
   assignees:
-    - talal
     - SuperSandro2000
