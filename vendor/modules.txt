@@ -1,5 +1,5 @@
-# github.com/alecthomas/kong v1.3.0
-## explicit; go 1.18
+# github.com/alecthomas/kong v1.4.0
+## explicit; go 1.20
 github.com/alecthomas/kong
 # github.com/gofrs/uuid/v5 v5.3.0
 ## explicit; go 1.19
@@ -16,7 +16,7 @@ github.com/gophercloud/gophercloud/v2/openstack/identity/v3/roles
 github.com/gophercloud/gophercloud/v2/openstack/identity/v3/tokens
 github.com/gophercloud/gophercloud/v2/openstack/utils
 github.com/gophercloud/gophercloud/v2/pagination
-# github.com/gophercloud/utils/v2 v2.0.0-20241021065553-b46d0737ee98
+# github.com/gophercloud/utils/v2 v2.0.0-20241107125844-da754bc75cd6
 ## explicit; go 1.22
 github.com/gophercloud/utils/v2/client
 github.com/gophercloud/utils/v2/env

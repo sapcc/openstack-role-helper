@@ -3,9 +3,9 @@ module github.com/sapcc/openstack-role-helper
 go 1.23
 
 require (
-	github.com/alecthomas/kong v1.3.0
+	github.com/alecthomas/kong v1.4.0
 	github.com/gophercloud/gophercloud/v2 v2.2.0
-	github.com/gophercloud/utils/v2 v2.0.0-20241021065553-b46d0737ee98
+	github.com/gophercloud/utils/v2 v2.0.0-20241107125844-da754bc75cd6
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/sapcc/go-bits v0.0.0-20241107000306-6eb1626e14d0
 )
