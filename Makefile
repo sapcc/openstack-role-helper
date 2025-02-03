@@ -36,7 +36,7 @@ GO_BUILDENV =
 build-all: build/openstack-role-helper
 
 build/openstack-role-helper: FORCE
-	@env $(GO_BUILDENV) go build $(GO_BUILDFLAGS) -ldflags '-s -w $(GO_LDFLAGS)' -o build/openstack-role-helper .
+	env $(GO_BUILDENV) go build $(GO_BUILDFLAGS) -ldflags '-s -w $(GO_LDFLAGS)' -o build/openstack-role-helper .
 
 DESTDIR =
 ifeq ($(shell uname -s),Darwin)
