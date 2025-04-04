@@ -3,7 +3,7 @@ module github.com/sapcc/openstack-role-helper
 go 1.24
 
 require (
-	github.com/alecthomas/kong v1.9.0
+	github.com/alecthomas/kong v1.10.0
 	github.com/gophercloud/gophercloud/v2 v2.7.0
 	github.com/gophercloud/utils/v2 v2.0.0-20250212084022-725b94822eeb
 	github.com/olekukonko/tablewriter v0.0.5
