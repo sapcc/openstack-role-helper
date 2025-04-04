@@ -1,10 +1,10 @@
 # github.com/alecthomas/kong v1.9.0
 ## explicit; go 1.20
 github.com/alecthomas/kong
-# github.com/gofrs/uuid/v5 v5.3.1
+# github.com/gofrs/uuid/v5 v5.3.2
 ## explicit; go 1.19
 github.com/gofrs/uuid/v5
-# github.com/gophercloud/gophercloud/v2 v2.6.0
+# github.com/gophercloud/gophercloud/v2 v2.7.0
 ## explicit; go 1.22
 github.com/gophercloud/gophercloud/v2
 github.com/gophercloud/gophercloud/v2/openstack
@@ -29,7 +29,7 @@ github.com/mattn/go-runewidth
 # github.com/olekukonko/tablewriter v0.0.5
 ## explicit; go 1.12
 github.com/olekukonko/tablewriter
-# github.com/sapcc/go-bits v0.0.0-20250327084830-778195481ca6
+# github.com/sapcc/go-bits v0.0.0-20250403123117-63238e6e6cfa
 ## explicit; go 1.24
 github.com/sapcc/go-bits/httpext
 github.com/sapcc/go-bits/logg
